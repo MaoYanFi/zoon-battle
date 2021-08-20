@@ -66,6 +66,9 @@ pm2 start app.js --name zoon-battle
 # 查看进程
 pm2 ls
 
+# 查看进程日志
+pm2 log zoon-battle
+
 # 重启进程
 pm2 restart zoon-battle
 
