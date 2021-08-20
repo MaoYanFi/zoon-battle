@@ -37,6 +37,7 @@ AutoBattle.prototype.runThis = async function (count) {
     let self = this;
     /// 获取宠物id列表
     let petIds = await self.getPetIds(self.config.address);
+    console.log("可用宠物数量: " + petIds.length);
     /// 获取宠物详情
     let pets = await self.getPets(petIds);
     /// 批量组装battle交易
