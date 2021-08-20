@@ -1,0 +1,24 @@
+{
+  "name": "zoon-battle",
+  "version": "0.1.0",
+  "author": "MaoYanFi",
+  "description": "Automatic monster fighting tool for CryptoZoon",
+  "repository": "https://github.com/MaoYanFi/zoon-battle.git",
+  "license": "MIT",
+  "keywords": [
+    "CryptoZoon",
+    "GameFi",
+    "BSC",
+    "MaoYanFi"
+  ],
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bignumber": "^1.1.0",
+    "bluebird-retry": "^0.11.0",
+    "dotenv": "^10.0.0",
+    "web3": "^1.5.2"
+  }
+}
