@@ -4,6 +4,14 @@
 
 Automatic monster fighting tool for [CryptoZoon](https://app.cryptozoon.io/)
 
+## 风险和免责
+
+本工具为社区开发，与CryptoZoon项目方无关。
+
+本工具可无偿使用，使用过程中的所有收益和亏损均由用户自己承担。
+
+本工具代码和第三方包均为开源产品，请认真查阅代码，并自行承担使用过程中的一切风险。
+
 ## 教程
 
 Windows详细部署教程【待完善】
@@ -80,6 +88,9 @@ pm2 delete zoon-battle
 
 ```
 
+## 猫眼社区社群答疑
+
+加微信（WeChat）进群：  shuaizhen668
 
 ## 捐赠
 
