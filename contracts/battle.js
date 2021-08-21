@@ -34,12 +34,12 @@ Battle.prototype.battle = async function (itemId, index) {
         gasPrice: self.chain.gasPrice,
         value: 0
     }
-    console.log("itemId: "+ itemId + ", index:" +index);
+    console.log("itemId: " + itemId + ", index:" + index);
     let sendResult = await self.tokenContract.methods.battle(itemId, index).send(options);
     return sendResult;
 }
 
-Battle.prototype.battleOfTransaction = function (itemId, index, nonce) {
+Battle.prototype.battleOfTransaction = function (itemId, index) {
     let self = this;
     let data = self.web3.eth.abi.encodeFunctionCall({
         name: 'battle',
@@ -52,7 +52,7 @@ Battle.prototype.battleOfTransaction = function (itemId, index, nonce) {
             "type": "uint8"
         }]
     }, [itemId.toString(), index.toString()]);
-    
+
     let owner = self.web3.eth.defaultAccount;
     let transaction = {
         from: owner,
@@ -60,8 +60,7 @@ Battle.prototype.battleOfTransaction = function (itemId, index, nonce) {
         gas: self.chain.gasLimit,
         gasPrice: self.chain.gasPrice,
         value: 0,
-        data: data,
-        nonce: nonce
+        data: data
     };
     return transaction;
 }
@@ -81,33 +80,22 @@ Battle.prototype.getTransactionCount = async function () {
     return transactionCount;
 }
 
+
 /// 线性发送交易
 Battle.prototype.queueTransactions = async function (transactions) {
     let self = this;
-    let current = -1;
-    let handled = -1;
-    const intervalObj = setInterval(async () => {
-        if (handled == transactions.length - 1) {
-            clearInterval(intervalObj);
-            return;
+    for(let i=0; i<transactions.length; i++) {
+        try {
+            let transaction = transactions[i];
+            let result = await self.sendTransactionAndRetry(transaction, i);
+            console.log("第" + i + "个交易发送成功: " + result);
+        } catch(err) {
+            console.log("第" + i + "个交易发送失败: " + err);
         }
-        if (current == handled) {
-            current++;
-            let transaction = transactions[current];
-            try {
-                let result = await self.sendTransactionAndRetry(transaction, current);
-                console.log("第"+current+"个交易发送成功: "+result);
-                handled++;
-            } catch (e) {
-                console.log("第"+current+"个交易发送失败: "+e);
-                handled++;
-            }
-
-        }
-    }, 3000);
+    }
 }
 
-Battle.prototype.retryRequest = async function(request) {
+Battle.prototype.retryRequest = async function (request) {
     let self = this;
     return new Promise((resolve, reject) => {
         /// 重试3次
@@ -122,7 +110,7 @@ Battle.prototype.retryRequest = async function(request) {
 
 }
 
-Battle.prototype.sendTransactionAndRetry = async function(transaction, index) {
+Battle.prototype.sendTransactionAndRetry = async function (transaction, index) {
     let self = this;
     let i = 0;
     return new Promise((resolve, reject) => {
@@ -137,7 +125,7 @@ Battle.prototype.sendTransactionAndRetry = async function(transaction, index) {
     });
 }
 
-Battle.prototype.sendTransaction = async function(transaction, index) {
+Battle.prototype.sendTransaction = async function (transaction, index) {
     let self = this;
     return new Promise((resolve, reject) => {
         self.web3.eth.sendTransaction(transaction, function (error, result) {
@@ -150,14 +138,14 @@ Battle.prototype.sendTransaction = async function(transaction, index) {
     });
 }
 
-Battle.prototype.battleSessionsTime = async function(tokenId, rare) {
+Battle.prototype.battleSessionsTime = async function (tokenId, rare) {
     let self = this;
     let result = await self.tokenContract.methods.battleSessionsTime(tokenId, rare).call();
     return result;
 }
 
 ///
-Battle.prototype.waitTimeSession = async function(tokenId, rare) {
+Battle.prototype.waitTimeSession = async function (tokenId, rare) {
     let self = this;
     return new Promise((resolve, reject) => {
         /// 重试3次
