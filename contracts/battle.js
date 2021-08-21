@@ -84,11 +84,13 @@ Battle.prototype.getTransactionCount = async function () {
 /// 线性发送交易
 Battle.prototype.queueTransactions = async function (transactions) {
     let self = this;
+    let wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     for(let i=0; i<transactions.length; i++) {
         try {
             let transaction = transactions[i];
             let result = await self.sendTransactionAndRetry(transaction, i);
             console.log("第" + i + "个交易发送成功: " + result);
+            await wait(3000);
         } catch(err) {
             console.log("第" + i + "个交易发送失败: " + err);
         }
