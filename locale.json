@@ -35,9 +35,9 @@
 		"zh":"胜利",
 		"en":"Win"
 	},
-	"Lost":{
+	"Lose":{
 		"zh":"失败",
-		"en":"Lost"
+		"en":"Lose"
 	},
 	"Attack result":{
 		"zh":"*** 战斗结果: {{result}}   获得奖励: +{{reward}}   增加经验值: +{{exp}}  ***",
