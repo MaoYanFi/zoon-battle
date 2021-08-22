@@ -20,6 +20,8 @@ const loopSeconds = process.env.loop_seconds || 60;
 
 const rpc = process.env.RPC || "https://bsc-dataseed.binance.org/";
 
+const lang = process.env.lang || "zh";
+
 
 /// 战斗合约合约地址
 const zoonBattleContract = "0xf70c08a428f300c7f3e3f09217211d21f7a50410";
@@ -41,7 +43,8 @@ const config = {
     zoonBattleContract: zoonBattleContract,
     zoonNftContract: zoonNftContract,
     gameIndex: gameIndex,
-    loopSeconds: loopSeconds
+    loopSeconds: loopSeconds,
+    lang: lang
 }
 
 module.exports = config

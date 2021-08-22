@@ -3,6 +3,10 @@ const Battle = require('./contracts/battle');
 const ERC721 = require('./contracts/erc721');
 
 
+var i18n_module = require('i18n-nodejs');
+var i18n = new i18n_module(config.lang, './../../locale.json');
+
+
 function AutoBattle(config) {
     let self = this;
     self.config = config;
@@ -12,7 +16,7 @@ function AutoBattle(config) {
 
 AutoBattle.prototype.run = async function () {
     let self = this;
-    console.log("ZOON自动Battle脚本启动，当前账号: " + self.config.address);
+    console.log(i18n.__("Current account", {address: self.config.address}));
     let timeOut = config.loopSeconds * 1000;
     let count = 1;
     (function iterator() {
@@ -33,17 +37,20 @@ AutoBattle.prototype.run = async function () {
 }
 
 AutoBattle.prototype.runThis = async function (count) {
-    console.log("============================程序开始第" + count + "次扫描==============================");
+    console.log("============================" + i18n.__("Number of scanning", {times: count}) + "==============================");
+
     let self = this;
+    
     /// 获取宠物id列表
     let petIds = await self.getPetIds(self.config.address);
-    console.log("可用宠物数量: " + petIds.length);
+    console.log(i18n.__("Number of pets available", {quantity: petIds.length}));
     /// 获取宠物详情
     let pets = await self.getPets(petIds);
     /// 批量组装battle交易
     let transactions = await self.batchConstructTransactions(pets, petIds);
     /// 批量发送交易
     await self.battleContract.queueTransactions(transactions);
+
 }
 
 /// 获取宠物id列表
@@ -126,7 +133,7 @@ AutoBattle.prototype.batchConstructTransactions = async function (pets, petIds) 
         let message = "";
         for (var i = 0; i < models.length; i++) {
             let model = models[i];
-            message = message + "宠物id:" + model.petId + ", rareIndex:" + model.rareIndex + "可以进行攻击";
+            message += i18n.__("Can attack", {petId: model.petId,rareIndex:model.rareIndex})
             let transaction = self.battleContract.battleOfTransaction(model.petId, self.config.gameIndex);
             transactions.push(transaction);
             if (i != models.length - 1) {
@@ -135,7 +142,7 @@ AutoBattle.prototype.batchConstructTransactions = async function (pets, petIds) 
         }
         console.log(message);
     } else {
-        console.log("当前无宠物需要攻击");
+        console.log(i18n.__("No pet to attack"));
     }
 
 
