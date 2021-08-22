@@ -120,17 +120,15 @@ AutoBattle.prototype.batchConstructTransactions = async function (pets, petIds) 
 
         }
     }
-    /// 获取nonce,组装交易
-    let transactionCount = await self.battleContract.getTransactionCount();
+    
     let transactions = [];
     if (models.length > 0) {
         let message = "";
         for (var i = 0; i < models.length; i++) {
             let model = models[i];
             message = message + "宠物id:" + model.petId + ", rareIndex:" + model.rareIndex + "可以进行攻击";
-            let transaction = self.battleContract.battleOfTransaction(model.petId, self.config.gameIndex, transactionCount);
+            let transaction = self.battleContract.battleOfTransaction(model.petId, self.config.gameIndex);
             transactions.push(transaction);
-            transactionCount++;
             if (i != models.length - 1) {
                 message += "\n";
             }
