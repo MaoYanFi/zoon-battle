@@ -1,0 +1,46 @@
+{
+	"Current account":{
+		"zh":"ZOON自动Battle脚本启动，当前账号: {{address}}",
+		"en":"ZOON Automatic Battle script starts with current account: {{address}}"
+	},
+	"Number of scanning":{
+		"zh":"程序开始第{{times}}次扫描",
+		"en":"The program starts number of scanning: {{times}}"
+	},
+	"Number of pets available":{
+		"zh":"可用宠物数量: {{quantity}}",
+		"en":"Number of pets available: {{quantity}}"
+	},
+	"Can attack":{
+		"zh":"宠物id:{{petId}}, rareIndex:{{rareIndex}}可以进行攻击",
+		"en":"Pet id:{{petId}}, rareIndex:{{rareIndex}} Can attack"
+	},
+	"No pet to attack":{
+		"zh":"当前无宠物需要攻击",
+		"en":"There is no pet to attack."
+	},
+	"Transaction successfully":{
+		"zh":"第{{current}}个交易发送成功, 交易ID: {{trxID}}",
+		"en":"Transaction {{current}} sent successfully, TrxID: {{trxID}}"
+	},
+	"Transaction failed":{
+		"zh":"第{{current}}个交易发送失败, 错误信息: {{err}}",
+		"en":"Transaction {{current}} sent failed, Error Message: {{err}}"
+	},
+	"Pets list":{
+		"zh":"宠物ID: {{itemId}}, 索引: {{index}}",
+		"en":"itemId: {{itemId }}, index: {{index}}"
+	},
+	"Win":{
+		"zh":"胜利",
+		"en":"Win"
+	},
+	"Lost":{
+		"zh":"失败",
+		"en":"Lost"
+	},
+	"Attack result":{
+		"zh":"*** 战斗结果: {{result}}   获得奖励: +{{reward}}   增加经验值: +{{exp}}  ***",
+		"en":"*** Battle Result: {{result}}   Reward: +{{reward}}   Exp: +{{exp}}  ***"
+	}
+}
