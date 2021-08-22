@@ -93,25 +93,40 @@ Battle.prototype.queueTransactions = async function (transactions) {
             let result = await self.sendTransactionAndRetry(transaction, i);
             console.log(i18n.__("Transaction successfully", {current: i+1, trxID: result}));
 
-            //  如果交易处于pending状态，则返回null.
+            if (config.attackResult) {
+
+                await wait(5000);
   
-            for(let j=0; j<10; j++) {
-                let logs = await self.getTransactionReceipt(result);
-                if (logs != null) {
-                    let log = self.decodeLog(logs['logs'][2]['data']);
+                for(let j=0; j<10; j++) {
 
-                    let res = log['result'] == '0' ? 'Lose' : 'Win';
+                    let logs = await retry(() => {
+                        return self.getTransactionReceipt(result);
+                    }, { max_tries: 5, interval: 3000 });
 
-                    let reward = self.web3.utils.fromWei(log['reward']);
+                    if (logs != null) {
 
-                    let exp = (parseInt(log['exp']) / 100).toFixed(2);
+                        try {
 
-                    console.log( i18n.__("Attack result", {result: i18n.__(res), reward: reward, exp: exp }) );
+                            let log = self.decodeLog(logs['logs'][2]['data']);
 
-                    break;
+                            let res = log['result'] == '0' ? 'Lose' : 'Win';
+
+                            let reward = self.web3.utils.fromWei(log['reward']);
+
+                            let exp = (parseInt(log['exp']) / 100).toFixed(2);
+
+                            console.log( i18n.__("Attack result", {result: i18n.__(res), reward: reward, exp: exp }) );
+
+                            break;
+
+                        } catch(err){
+                            console.log(err);
+                        }
+                    }
+
+                    await wait(2000);
                 }
 
-                await wait(1000);
             }
 
             await wait(3000);
