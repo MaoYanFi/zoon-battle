@@ -1,6 +1,7 @@
 const config = require('./config');
 const Battle = require('./contracts/battle');
 const ERC721 = require('./contracts/erc721');
+const cache = require('./utils/cache');
 
 
 var i18n_module = require('i18n-nodejs');
@@ -16,7 +17,7 @@ function AutoBattle(config) {
 
 AutoBattle.prototype.run = async function () {
     let self = this;
-    console.log(i18n.__("Current account", {address: self.config.address}));
+    console.log(i18n.__("Current account", { address: self.config.address }));
     let timeOut = config.loopSeconds * 1000;
     let count = 1;
     (function iterator() {
@@ -37,13 +38,13 @@ AutoBattle.prototype.run = async function () {
 }
 
 AutoBattle.prototype.runThis = async function (count) {
-    console.log("============================" + i18n.__("Number of scanning", {times: count}) + "==============================");
+    console.log("============================" + i18n.__("Number of scanning", { times: count }) + "==============================");
 
     let self = this;
-    
+
     /// 获取宠物id列表
     let petIds = await self.getPetIds(self.config.address);
-    console.log(i18n.__("Number of pets available", {quantity: petIds.length}));
+    console.log(i18n.__("Number of pets available", { quantity: petIds.length }));
     /// 获取宠物详情
     let pets = await self.getPets(petIds);
     /// 批量组装battle交易
@@ -59,12 +60,28 @@ AutoBattle.prototype.getPetIds = async function (address) {
     let self = this;
     /// 获取当前账号有几个NFT
     let balance = await self.erc721Contract.balanceOf(address);
-    let promises = [];
-    for (var i = 0; i < balance; i++) {
-        let item = self.erc721Contract.tokenOfOwnerByIndex(address, i);
-        promises.push(item);
+    let balanceCacheKey = 'pets_balance';
+    let balanceCache = cache.get(balanceCacheKey);
+    let balanceChanged = balanceCache != balance;
+    if (balanceChanged) {
+        //console.log('balanceChanged');
+        cache.set(balanceCacheKey, balance, 1000000000);
     }
-    let results = await Promise.all(promises);
+
+    let petIdsCacheKey = "pets_ids";
+    let results = cache.get(petIdsCacheKey);
+    // if (results) {
+    //     console.log(`cache   ${petIdsCacheKey} : ${results}`);
+    // }
+    if (!results || balanceChanged) {
+        let promises = [];
+        for (var i = 0; i < balance; i++) {
+            let p = self.erc721Contract.tokenOfOwnerByIndex(address, i);
+            promises.push(p);
+        }
+        results = await Promise.all(promises);
+        cache.set(petIdsCacheKey, results, 10 * 60);//用户余额不变的情况下，缓存10分钟的宠物id列表
+    }
     return results;
 }
 
@@ -73,21 +90,21 @@ AutoBattle.prototype.getPets = async function (petIds) {
 
     let self = this;
     /// 批量请求宠物详情
-    let promises = [];
+    let results = [];
     for (var i = 0; i < petIds.length; i++) {
         let tokenId = petIds[i];
-        let item = self.erc721Contract.getZoan(tokenId);
-        promises.push(item);
+        let petCacheKey = `pet_${tokenId}`;
+        let item = cache.get(petCacheKey);
+        // if (item) {
+        //     console.log(`cache   ${petCacheKey} : ${item}`);
+        // }
+        if (!item) {
+            item = await self.erc721Contract.getZoan(tokenId);
+            cache.set(petCacheKey, item, 3 * 60 * 60);//因为目前只用到宠物的RARE，其实可以永久缓存
+        }
+        results.push(item);
     }
-    let results = await Promise.all(promises);
     return results;
-}
-
-
-AutoBattle.prototype.getZoan = async function (tokenId) {
-    let self = this;
-    let result = await self.erc721Contract.getZoan(tokenId);
-    return result
 }
 
 AutoBattle.prototype.ownerOf = async function (tokenId) {
@@ -100,15 +117,16 @@ AutoBattle.prototype.ownerOf = async function (tokenId) {
 AutoBattle.prototype.batchConstructTransactions = async function (pets, petIds) {
 
     let self = this;
-    let promises = [];
+    let waitTimes = [];
     /// 批量获取宠物下次对战的等待时间
     for (var i = 0; i < pets.length; i++) {
         let pet = pets[i];
         let petId = petIds[i];
-        let item = self.getWaitTimeSessionOfPet(pet, petId);
-        promises.push(item);
+        let item = await self.getWaitTimeSessionOfPet(pet, petId);
+        waitTimes.push(item);
     }
-    let waitTimes = await Promise.all(promises);
+    // console.log("waitTimes:");
+    // console.log(waitTimes);
     /// 筛选可以攻击的pet
     let models = [];
     for (var j = 0; j < waitTimes.length; j++) {
@@ -127,13 +145,13 @@ AutoBattle.prototype.batchConstructTransactions = async function (pets, petIds) 
 
         }
     }
-    
+
     let transactions = [];
     if (models.length > 0) {
         let message = "";
         for (var i = 0; i < models.length; i++) {
             let model = models[i];
-            message += i18n.__("Can attack", {petId: model.petId,rareIndex:model.rareIndex})
+            message += i18n.__("Can attack", { petId: model.petId, rareIndex: model.rareIndex })
             let transaction = self.battleContract.battleOfTransaction(model.petId, self.config.gameIndex);
             transactions.push(transaction);
             if (i != models.length - 1) {
@@ -156,13 +174,21 @@ AutoBattle.prototype.getWaitTimeSessionOfPet = async function (pet, petId) {
     /// 获取宠物品质
     let rare = self.getRare(pet.dna);
     /// 获取宠物下次对战的等待时间
-    let promises = [];
+    let results = [];
     for (var i = 0; i < rare; i++) {
         let rareIndex = i + 1;
-        let item = self.battleContract.waitTimeSession(petId, rareIndex);
-        promises.push(item);
+        let waitTimeSessionCacheKey = `wait_time_session_${petId}_${rareIndex}`;
+        let cacheWaitTime = cache.getWithSecondDecrease(waitTimeSessionCacheKey);
+        let item = cacheWaitTime;
+        // if (item) {
+        //     console.log(`cache   ${waitTimeSessionCacheKey} : ${cacheWaitTime}`);
+        // }
+        if (!item) {
+            item = await self.battleContract.waitTimeSession(petId, rareIndex);
+            cache.set(waitTimeSessionCacheKey, item, item - 1);
+        }
+        results.push(item);
     }
-    let results = await Promise.all(promises);
     return results;
 }
 
