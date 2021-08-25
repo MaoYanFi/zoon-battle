@@ -53,7 +53,7 @@ function getCacheObject(key) {
     if (obj.exp > now) {
         return obj;
     }
-    console.log(`${key} exp`);
+    // console.log(`${key} exp`);
     remove(key);
     return null;
 }
