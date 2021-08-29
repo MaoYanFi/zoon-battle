@@ -1,16 +1,30 @@
 const dotenv = require('dotenv');
+const Web3 = require('web3');
+const web3 = new Web3();
 const result = dotenv.config();
 if (result.error) {
     throw result.error;
 }
+var readlineSync = require('readline-sync');
 
-const address = process.env.address;
-if (!address) {
-    console.log('Please configure the address in .env file');
-}
-const privateKey = process.env.private_key;
-if (!privateKey) {
-    console.log('Please configure the private_key in .env file');
+let address = process.env.address;
+let privateKey = process.env.private_key;
+
+while (!privateKey) {
+    try {
+        privateKey = readlineSync.question('Please enter your private key (empty to exit): ', {
+            keyInSelect: true,
+            hideEchoBack: true // The typed text on screen is hidden by `*` (default).
+        });
+        if (!privateKey) {
+            process.exit(0);
+        }
+        let account = web3.eth.accounts.privateKeyToAccount(privateKey);
+        address = account.address.toLowerCase();
+    } catch (err) {
+        console.log('Private key Wrong: ' + err.message);
+        privateKey = "";
+    }
 }
 //挑战第几个boss, 2代表60%等级那个
 let gameIndex = process.env.game_index || 3;
