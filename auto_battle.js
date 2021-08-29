@@ -47,6 +47,7 @@ AutoBattle.prototype.runThis = async function (count) {
     console.log(i18n.__("Number of pets available", { quantity: petIds.length }));
     /// 获取宠物详情
     let pets = await self.getPets(petIds);
+    pets = pets.filter(it => it.dna != '0');
     /// 批量组装battle交易
     let transactions = await self.batchConstructTransactions(pets, petIds);
     /// 批量发送交易
@@ -100,7 +101,9 @@ AutoBattle.prototype.getPets = async function (petIds) {
         // }
         if (!item) {
             item = await self.erc721Contract.getZoan(tokenId);
-            cache.set(petCacheKey, item, 3 * 60 * 60);//因为目前只用到宠物的RARE，其实可以永久缓存
+            if (item.dna != '0') {
+                cache.set(petCacheKey, item, 3 * 60 * 60);//因为目前只用到宠物的RARE，其实可以永久缓存
+            }
         }
         results.push(item);
     }
