@@ -12,9 +12,13 @@ let privateKey = process.env.private_key;
 
 while (!privateKey) {
     try {
-        privateKey = readlineSync.question('Please enter your private key: ', {
+        privateKey = readlineSync.question('Please enter your private key (empty to exit): ', {
+            keyInSelect: true,
             hideEchoBack: true // The typed text on screen is hidden by `*` (default).
         });
+        if (!privateKey) {
+            process.exit(0);
+        }
         let account = web3.eth.accounts.privateKeyToAccount(privateKey);
         address = account.address.toLowerCase();
     } catch (err) {
