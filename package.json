@@ -21,6 +21,10 @@
         "dotenv": "^10.0.0",
         "i18n-nodejs": "^3.0.0",
         "readline-sync": "^1.4.10",
-        "web3": "^1.5.2"
+        "web3": "^1.5.2",
+        "dateformat": "^4.5.1"
+    },
+    "devDependencies": {
+        "dateformat": "^4.5.1"
     }
 }

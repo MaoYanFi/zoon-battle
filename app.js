@@ -1,3 +1,9 @@
+const dateFormat = require("dateformat");
+
+console.log = function () {
+    var now = dateFormat(new Date(), "yyyy-mm-dd HH:MM:ss");
+    console.info(now,arguments[0]);
+}
 const dotenv = require('dotenv');
 const result = dotenv.config();
 if (result.error) {
